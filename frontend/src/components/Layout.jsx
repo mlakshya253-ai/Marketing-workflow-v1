@@ -180,6 +180,15 @@ export default function Layout({ children }) {
 
           <div className="ml-auto flex items-center gap-2">
             <button
+              data-testid="topbar-theme-toggle-btn"
+              onClick={toggle}
+              className="w-9 h-9 rounded-md border border-border hover:bg-muted grid place-items-center transition-colors"
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <button
               data-testid="topbar-inbox-btn"
               onClick={() => navigate("/inbox")}
               className="relative w-9 h-9 rounded-md border border-border hover:bg-muted grid place-items-center transition-colors"
