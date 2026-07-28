@@ -1,0 +1,122 @@
+{
+  "theme_strategy": {
+    "core_aesthetic": "Linear x Notion Aesthetic — Calm-density SaaS",
+    "vibe": "A dark-first power tool with a calm, neutral base and high information efficiency. Functional beauty.",
+    "light_mode": "Off-white base, clean borders, minimalist. Deeply focused.",
+    "dark_mode": "Graphite/Charcoal base. Near-monochrome surfaces with layered elevation via subtle background shifts. Never pure black.",
+    "accent": "Confident Emerald"
+  },
+  "typography": {
+    "strategy": "The Anti-Default Rule. Strictly avoiding Inter, Roboto, and Open Sans. We want a distinctive, modern tech voice.",
+    "headings": {
+      "font_family": "Cabinet Grotesk",
+      "weights": "Medium (500), Bold (700)",
+      "letter_spacing": "tracking-tight",
+      "usage": "H1/H2 should feel punchy and editorial but crisp."
+    },
+    "body": {
+      "font_family": "Manrope",
+      "weights": "Regular (400), Medium (500)",
+      "letter_spacing": "tracking-normal",
+      "usage": "Highly legible for dense dashboards, kanban boards, and chat threads."
+    },
+    "hierarchy_rules": "Max heading size is text-5xl on desktop. Do not exceed 2 Tailwind steps between heading and subheading."
+  },
+  "colors": {
+    "light": {
+      "background": "#FAFAFA",
+      "surface": "#FFFFFF",
+      "border": "#E5E7EB",
+      "text_primary": "#111827",
+      "text_secondary": "#6B7280"
+    },
+    "dark": {
+      "background": "#0C0D0E",
+      "surface": "#16181A",
+      "border": "#27272A",
+      "text_primary": "#F9FAFB",
+      "text_secondary": "#A1A1AA"
+    },
+    "accent": {
+      "emerald_default": "#10B981",
+      "emerald_hover": "#059669",
+      "emerald_focus_ring": "rgba(16, 185, 129, 0.4)"
+    },
+    "rules": [
+      "Never use pure black #000000 or pure gray #808080. Always tint neutrals.",
+      "The Emerald accent is used sparingly: Primary buttons, active states, unread indicator, and high-impact data points.",
+      "Always explicitly set text color on hover. (e.g. hover:bg-emerald-600 hover:text-white)."
+    ]
+  },
+  "visual_enhancers": {
+    "surfaces": "Borderless or near-borderless cards with 1px subtle strokes (border-white/10 in dark mode, border-black/5 in light mode).",
+    "glassmorphism": "Used specifically for sticky headers, floating navs, and overlays. Must use backdrop-blur-xl with a tinted background (bg-black/60 or bg-white/70). CRITICAL: NEVER use a fully transparent background for headers, dropdowns, or overlays.",
+    "shadows": "Ambient + direct layered shadows. Soft diffuse shadow for modals, crisp drop-shadows for popovers.",
+    "focus_states": "Visible keyboard focus everywhere. focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-offset-background."
+  },
+  "grids_and_layouts": {
+    "dashboard_mode": "High Density Grid. grid-cols-1 md:grid-cols-3 lg:grid-cols-4 with gap-4 or gap-6. Every pixel utilized.",
+    "kanban_mode": "Horizontal scrolling flexbox or grid with strict column widths for 'Triage', 'Queue', and 'My Requests'.",
+    "spacing": "Generous Spacing Philosophy for marketing/auth pages (p-8, p-12). Compact/Dense spacing for the actual ops dashboard (p-4, p-6).",
+    "mobile": "Mobile-first responsive. Use a bottom tab bar on mobile screens (fixed bottom-0 w-full border-t bg-background/80 backdrop-blur-md pb-safe z-50)."
+  },
+  "component_guidelines": {
+    "buttons": "Pill-shaped or slightly rounded (rounded-md) with crisp text. Emerald primary buttons.",
+    "inputs": "Shadcn standard but styled with focus-visible:ring-emerald-500. Add subtle inner shadow on light mode.",
+    "toasts": "Use Sonner (/app/frontend/src/components/ui/sonner.jsx).",
+    "modals_dropdowns": "CRITICAL: Dropdown menus, tooltips, and dialogs MUST have a solid or highly-opaque glass background. No pure transparency.",
+    "tabs": "Shadcn Tabs. Override fixed heights like h-9 to h-auto to prevent cutoff.",
+    "icons": "Use lucide-react. Keep icon sizes consistent (w-4 h-4 for inline, w-5 h-5 for primary actions)."
+  },
+  "motion": {
+    "micro_interactions": "Hover states on all interactive elements. Buttons lift slightly (-translate-y-[1px]).",
+    "transitions": "Use specific properties: transition-colors duration-200, transition-transform. NEVER use 'transition: all'.",
+    "lists": "Staggered entrance animations for kanban cards and inbox items.",
+    "accessibility": "Respect prefers-reduced-motion."
+  },
+  "accessibility_and_testing": {
+    "contrast": "APCA preferred. Normal text min 4.5:1. Never grey-on-grey.",
+    "data_testid": "CRITICAL: All interactive and key informational elements MUST include a data-testid attribute (kebab-case, role-based). Example: data-testid='submit-request-button', data-testid='request-status-badge'."
+  },
+  "screen_by_screen_guidance": {
+    "auth": "Minimalist centered card. 'Creative Hub'. Smooth JWT login/signup. Glassmorphic card over a subtle abstract Emerald texture background.",
+    "dashboard_home": "Executive view. Top KPI metrics, active blockers list, WIP per user charts. Dense, readable.",
+    "all_my_requests": "Table or Kanban-esque list. Filter tabs at the top. Each card shows status, requester, @mentions snippet.",
+    "new_request_form": "Multi-step or clean single-page form. Drag-and-drop file upload zone (max 5x5MB) with image previews.",
+    "request_detail": "Split view. Left: Brief, reference images, delivery link. Right: Activity/Comment thread. Sticky action bar (Approve/Redesign/Deliver) at bottom or top right.",
+    "triage_queue": "Master queue list with drag-to-rank functionality. 'High Importance' flags in Emerald or distinct alert color.",
+    "inbox": "In-app notification center. Unread count pill. Clear distinct unread states (subtle emerald background tint). Click-to-navigate.",
+    "admin_panel": "Dense table view for user role management and channel list editing."
+  },
+  "image_urls": {
+    "abstract_emerald_texture": {
+      "url": "https://images.pexels.com/photos/8357144/pexels-photo-8357144.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "A soothing abstract gradient of green tones, perfect for minimalist design.",
+      "category": "auth_background, placeholder_cover"
+    },
+    "creative_workspace": {
+      "url": "https://images.pexels.com/photos/6925033/pexels-photo-6925033.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "An art studio desk with brushes and watercolors showcasing a creative workspace.",
+      "category": "empty_state_illustration, reference_image_mock"
+    }
+  },
+  "instructions_to_main_agent": {
+    "file_extensions": "Use .js or .jsx exclusively. Do not generate .tsx files. You are working with JavaScript React.",
+    "shadcn_customization": "Do not blindly copy Shadcn components. Strip the default 'Vercel-look' and apply the Notion/Linear styling (subtle borders, specific shadows, Emerald accent).",
+    "state_management": "Use React Context or similar for JWT auth state and multi-role scoping.",
+    "empty_states": "Ensure every data-fetching screen has a meticulously designed empty, loading (skeleton), and error state."
+  },
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic outputs. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur), but never pure transparent backgrounds behind text.",
+    "You MUST NOT apply universal transition (e.g., transition: all).",
+    "You MUST NOT center align the app container globally. Maintain natural left-aligned reading flow.",
+    "Always use modern button styles.",
+    "NEVER use emoji characters like 🤖🧠💭 for icons. Use lucide-react.",
+    "Every interaction needs micro-animations.",
+    "All interactive elements MUST have a data-testid attribute.",
+    "Use sonner for toasts.",
+    "Missing image categories = use the provided URLs. Do not use placeholder text."
+  ]
+}
