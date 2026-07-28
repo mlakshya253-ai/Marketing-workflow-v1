@@ -111,18 +111,25 @@ async def _clear_attempts(identifier: str):
 @router.post("/login")
 async def login(payload: LoginIn, response: Response, request: Request):
     email = payload.email.lower().strip()
-    ip = request.client.host if request.client else "unknown"
+    # Behind ingress/proxy request.client.host is a per-pod address; use forwarded IP.
+    xff = request.headers.get("x-forwarded-for", "")
+    ip = (xff.split(",")[0].strip() if xff else (request.client.host if request.client else "unknown"))
     identifier = f"{ip}:{email}"
+    # Lock by email too so a distributed attacker can't split attempts across IPs.
+    email_identifier = f"email:{email}"
     await _check_lockout(identifier)
+    await _check_lockout(email_identifier)
 
     user = await db.users.find_one({"email": email})
     if not user or not verify_password(payload.password, user["password_hash"]):
         await _record_failed(identifier)
+        await _record_failed(email_identifier)
         raise HTTPException(status_code=401, detail="Invalid email or password")
     if not user.get("active", True):
         raise HTTPException(status_code=403, detail="Account deactivated")
 
     await _clear_attempts(identifier)
+    await _clear_attempts(email_identifier)
     access = create_access_token(user["id"], email)
     refresh = create_refresh_token(user["id"])
     set_auth_cookies(response, access, refresh)
