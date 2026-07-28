@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, formatApiErrorDetail } from "@/lib/api";
 import { toast } from "sonner";
-import { UploadCloud, X, Loader2 } from "lucide-react";
+import { UploadCloud, X, Loader2, Calendar as CalendarIcon } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO } from "date-fns";
 
 export default function NewRequest() {
   const nav = useNavigate();
@@ -137,12 +140,43 @@ export default function NewRequest() {
             </select>
           </Field>
           <Field label="Desired deadline" hint="Informational — not a hard commitment.">
-            <input
-              type="date"
-              data-testid="req-deadline-input"
-              value={form.desired_deadline} onChange={(e) => set("desired_deadline", e.target.value)}
-              className="w-full px-3 py-2 rounded-md border border-border bg-background text-sm focus-visible:border-emerald-500"
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  data-testid="req-deadline-input"
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-md border border-border bg-background text-sm hover:border-emerald-500/50 focus-visible:border-emerald-500 transition-colors"
+                >
+                  <span className={form.desired_deadline ? "" : "text-muted-foreground"}>
+                    {form.desired_deadline
+                      ? format(parseISO(form.desired_deadline), "PPP")
+                      : "Pick a date (optional)"}
+                  </span>
+                  <CalendarIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start" data-testid="req-deadline-popover">
+                <Calendar
+                  mode="single"
+                  selected={form.desired_deadline ? parseISO(form.desired_deadline) : undefined}
+                  onSelect={(d) => set("desired_deadline", d ? format(d, "yyyy-MM-dd") : "")}
+                  disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                  initialFocus
+                />
+                {form.desired_deadline && (
+                  <div className="p-2 border-t border-border">
+                    <button
+                      type="button"
+                      onClick={() => set("desired_deadline", "")}
+                      data-testid="clear-deadline-btn"
+                      className="text-xs text-muted-foreground hover:text-foreground w-full text-center py-1"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
           </Field>
         </div>
 

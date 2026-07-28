@@ -20,7 +20,7 @@ def base_url() -> str:
     return BASE_URL
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def clean_db():
     """Wipe collections so first-signup flow is testable. Runs once per session."""
     from pymongo import MongoClient
