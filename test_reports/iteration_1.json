@@ -1,0 +1,46 @@
+{
+  "summary": "Comprehensive backend + frontend regression for Creative Hub. Backend: 46/47 pytest tests pass covering auth (register/login/me/logout, claim-admin, first-signup flag), admin (role changes, last-admin protection, non-admin 403), channels (defaults + create), full write_for_me state-machine (submit → prioritize → writer pickup → submit-copy → bounce → approve → designer pickup → hold/resume → deliver → redesign loop → completed), self_provided direct-to-designer path, cancellation split (immediate vs pending_cancellation + triage decision), comments with @mention notifications, notifications listing/unread-count/mark-single/mark-all-read + actor-not-notified invariant, dashboard summary (triage/executive only), reassignment, request search + requester-only visibility, file upload/download + non-image rejection. Frontend: verified first-signup claim-admin prompt appears and promotes to Triage; second signup does NOT show claim prompt and defaults to Requester; sidebar nav items appear per role; Inbox loads with populated notifications (3 items after new-request events), 'Mark all read' clears unread count to 0 verified via API; tab-all/tab-active/tab-awaiting_me/tab-completed are all present & clickable on RequestsList. One backend bug found: brute-force lockout does not trigger because identifier uses request.client.host (per-pod internal IP) instead of the real client IP from X-Forwarded-For; behind a multi-pod load-balancer the 5-failure counter is split across pods and never reaches the threshold.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/auth/login (brute-force lockout)",
+        "issue": "Lockout identifier is f'{request.client.host}:{email}'. Behind the k8s ingress there are >=2 backend pods, and request.client.host is the immediate upstream (per-pod internal IP), so failed-attempt counters are partitioned across pods and never hit the 5-fail threshold. Verified via /var/lib/... login_attempts collection which shows two distinct 10.208.151.74 and 10.208.151.75 identifiers for the same email each holding ~4 attempts, no 429 ever returned in 7 attempts. Fix: parse X-Forwarded-For header (leftmost non-private IP) or key the lockout by email alone (or user_id).",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_creative_hub_e2e.py",
+    "/app/backend/tests/conftest.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix brute-force lockout identifier in /app/backend/routes_auth.py to use the real client IP (X-Forwarded-For) or the email/user_id, so the 5-failure threshold works behind the multi-pod ingress."
+  ],
+  "critical_code_review_comments": [
+    "routes_requests.py is 618 lines — consider splitting per lifecycle stage (create/list/detail vs state-transition vs cancellation vs comments) for maintainability.",
+    "routes_auth.py _check_lockout / _record_failed rely on request.client.host which will be a proxy IP behind ingress — should read from X-Forwarded-For (see HIGH backend issue).",
+    "routes_admin.PATCH /channels/{id} accepts an untyped `payload: dict` — should use a Pydantic model for input validation & consistent 422 responses.",
+    "routes_requests.pickup: designer can pick up while status=='prioritized' with content_source=='write_for_me' — the current condition only forbids the mismatched pair with status!='prioritized' OR wrong content_source, but the second branch after 'raise' also silently allows if status==in_design and designer null. Overall logic is correct but nested if/else is hard to read; suggest early guards.",
+    "notifications.notify skips the actor but uses actor_id parameter that is optional; if callers forget to pass it, actors will get self-notifications. Consider making it required or auto-injecting from a context.",
+    "storage.put_object / get_object are synchronous calls made inside async routes — could block the event loop under high load; run in thread pool executor.",
+    "Frontend AuthContext (not viewed here) — 401 errors are logged at signup page before the user creates an account (Failed to load resource: 401). Consider suppressing the /auth/me pre-flight when on public /login and /signup routes to keep console clean."
+  ],
+  "updated_files": [
+    "/app/backend/tests/conftest.py (new)",
+    "/app/backend/tests/test_creative_hub_e2e.py (new)"
+  ],
+  "success_rate": {"backend": "97.9% (46/47)", "frontend": "100% of the flows exercised"},
+  "test_credentials": "Created via API during test session: admin@creativehub.com/Admin1234! (triage), requester@creativehub.com/Req1234!, writer@creativehub.com/Pass1234!, designer@creativehub.com/Pass1234!, designer2@creativehub.com/Des1234!, exec@creativehub.com/Pass1234!. NOTE: /app/memory/test_credentials.md still references *.test TLD which pydantic EmailStr rejects — please update the memory doc to use .com.",
+  "seed_data_creation": "Session-scoped conftest fixture wipes users/requests/audit_log/comments/notifications/login_attempts/files collections before the pytest run so the first-signup flow is testable. Default channels are re-seeded on FastAPI startup. Frontend tests then used these API-registered accounts.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The e2e pytest suite in /app/backend/tests/test_creative_hub_e2e.py is order-dependent (uses a session-scoped `state` dict) — do NOT run tests in random order and do NOT use pytest-randomly. The conftest wipes DB at session start; run against a preview environment only. If re-running after lockout fix, the test_lockout_after_5_fails should pass; if it still fails, verify that the ingress forwards X-Forwarded-For to the backend pods. All other flows have been exercised end-to-end so a full re-run confirms regression status. Frontend: to re-test Inbox/mark-all-read, create some notifications first (e.g., have a requester POST a new request) then log in as the triage admin.",
+  "rca_of_the_issue": "Brute-force lockout bug — routes_auth.py:114 identifier = f'{ip}:{email}' where ip = request.client.host. In k8s the FastAPI app sees the ingress-controller pod IP (or, when replicas>1, the connection can land on either backend pod). Reproduction: register a user then POST 6 wrong-password /api/auth/login calls in quick succession — each pod records only a subset and neither exceeds count=5, so no 429 is returned. Mitigation: use the leftmost non-private IP from the X-Forwarded-For header (or drop IP and lock by email/user_id, with a small deliberate delay to avoid enumeration)."
+}
